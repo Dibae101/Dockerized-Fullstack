@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+   backend:
+      image: backend-image
+      environment:
+         - NODE_ENV=dev
+      env_file: 
+         - .env
+      container_name: java_backend
+      build:
+         context: ./
+         dockerfile: backend.dockerfile
+      volumes:
+         - ./:/app
+      restart: always
+      networks:
+         app_network:
+            ipv4_address: "172.29.0.2"
+      ports:
+         - "8080:8080"
+
+   frontend:
+      depends_on:
+         - backend
+      links:
+        - backend
+      image: frontend-image
+      env_file: 
+         - .env
+      container_name: frontendapp
+      build:
+         context: ./
+         dockerfile: frontend.dockerfile
+      volumes:
+         - ./:/app
+      restart: always
+      networks:
+         app_network:
+            ipv4_address: "172.29.0.3"
+      ports:
+         - "80:80"
+
+networks:
+  app_network:
+    ipam:
+      config:
+        - subnet: "172.29.0.0/16"
