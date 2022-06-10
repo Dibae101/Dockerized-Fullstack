@@ -4,3 +4,4 @@ deployment_scripts
 .jhipster
 .vscode
 npm-debug*
+target
