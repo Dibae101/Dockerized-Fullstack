@@ -1,0 +1,37 @@
+variables: 
+    DOCKER_REGISTRY: 222222222.dkr.ecr.ap-south-1.amazonaws.com
+    AWS_DEFAULT_REGION: ap-south-1
+    APP_NAME: qa-frontend
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    IMAGE_TAG: 222222222222.dkr.ecr.ap-south-1.amazonaws.com/frontend:24
+
+publish:
+    # aws cli docker image
+    image: 
+        name: docker:latest
+        # entrypoint: [""]
+    services:
+        - docker:19-dind
+        # when: never
+    rules:
+        - changes:
+            - frontend.dockerfile
+    when: always
+    allow_failure: true
+    before_script:
+        - apk add --no-cache curl jq python3 py3-pip
+        - pip install awscli
+        - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+        # - aws ecr get-login-password | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+        - aws --version
+        - docker info
+        - docker --version
+        # - amazon-linux-extras install docker 
+        # - aws --version
+        # - docker --version
+    script:
+        - docker pull $IMAGE_TAG || true
+        - docker build  --cache-from  $IMAGE_TAG -t $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID -f frontend.dockerfile .
+        - docker push $DOCKER_REGISTRY/$APP_NAME:$CI_PIPELINE_IID
