@@ -1,3 +1,5 @@
+# Pipeline within a server hosted in Ec2
+
 pipeline {
     agent any
 
