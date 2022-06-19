@@ -13,7 +13,10 @@ WORKDIR $HOME
 
 ADD . $HOME
 
-#caching layers on the fly
+# RUN export DOCKER_BUILDKIT=1
+
+RUN export COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1
+
 RUN --mount=type=cache,target=/root/.m2 mvn -f $HOME/pom.xml clean package -DskipTests
 
 # here add path only to /home/app
@@ -37,6 +40,6 @@ ENTRYPOINT ["java","-jar","/usr/local/lib/ontarget.jar"]
 
 # docker run -dp 8080:8080 new-backend
 
-# Solving maven wrapper issue:
+# SOlving maven wrapper issue:
 # RUN mvn -N io.takari:maven:wrapper
 # export DOCKER_BUILDKIT=1
