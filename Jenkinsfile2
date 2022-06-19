@@ -1,12 +1,12 @@
 pipeline {
     agent any
     environment {
-        AWS_ACCOUNT_ID="998162839384"
+        AWS_ACCOUNT_ID="2222222222222"
         AWS_DEFAULT_REGION="ap-south-1"
         IMAGE_TAG="v1"
 
         IMAGE_REPO_FRONTEND="qa-frontend"
-        REPO_FRONTEND_URI = "222222222222.dkr.ecr.ap-south-1.amazonaws.com/qa-frontend"
+        REPO_FRONTEND_URI = "222222222222".dkr.ecr.ap-south-1.amazonaws.com/qa-frontend"
 
         IMAGE_REPO_BACKEND="qa-backend"
         REPO_BACKEND_URI = "2222222222222.dkr.ecr.ap-south-1.amazonaws.com/qa-backend"
@@ -39,8 +39,8 @@ pipeline {
     }
    // Uploading Docker images into AWS ECR
     stage('Pushing to ECR') {
-      steps{ 
-        script {
+        steps{ 
+            script {
           // frontend push
                 sh """docker tag ${IMAGE_REPO_FRONTEND}:${IMAGE_TAG} ${REPO_FRONTEND_URI}:$IMAGE_TAG"""
                 sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_FRONTEND}:${IMAGE_TAG}"""
@@ -49,6 +49,14 @@ pipeline {
                 sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_BACKEND}:${IMAGE_TAG}"""
             }
           }
+        }
+    stage('ECS Restartt') {
+        steps{
+            script{
+                sh """aws ecs update-service --cluster Cluster_name --service Service-name --force-new-deployment --region ap-south-1"""
+                }
+        
+            }
         }
     }
 }
