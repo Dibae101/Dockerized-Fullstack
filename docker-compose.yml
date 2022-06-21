@@ -1,3 +1,4 @@
+# for the latest docker-compose version, download the latest docker-compose accordingly
 version: "3.9"
  
 services:
@@ -6,8 +7,8 @@ services:
      environment:
          - NODE_ENV=dev
      env_file:
-         - .env
-     container_name: java_backend
+         - .env.example
+     container_name: qa-backend
      build:
          context: ./
          dockerfile: backend.dockerfile
@@ -15,7 +16,7 @@ services:
          - ./:/app
      restart: always
      networks:
-        app_network:
+        ontarget_network:
            ipv4_address: "172.29.0.2"
      ports:
          - "8080:8080"
@@ -27,8 +28,8 @@ services:
          - backend
      image: frontend-image
      env_file:
-         - .env
-     container_name: frontendapp
+         - .env.example
+     container_name: qa-frontend
      build:
          context: ./
          dockerfile: frontend.dockerfile
@@ -36,13 +37,13 @@ services:
          - ./:/app
      restart: always
      networks:
-         app_network:
+         ontarget_network:
             ipv4_address: "172.29.0.3"
      ports:
          - "80:80"
  
 networks:
-   app_network:
+   ontarget_network:
       ipam:
          config:
             - subnet: "172.29.0.0/16"
