@@ -27,9 +27,9 @@ FROM openjdk:8-jdk-slim
 
 COPY --from=build /usr/app/target/* /usr/local/lib/
  
-COPY .env /usr/local/lib/
+COPY .env.example /usr/local/lib/.env
  
-COPY .env /
+COPY .env.example /.env
 
 EXPOSE 8080
  
@@ -43,3 +43,4 @@ ENTRYPOINT ["java","-jar","/usr/local/lib/ontarget.jar"]
 # SOlving maven wrapper issue:
 # RUN mvn -N io.takari:maven:wrapper
 # export DOCKER_BUILDKIT=1
+
