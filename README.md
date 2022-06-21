@@ -3,5 +3,5 @@ Module (initialited with Jhispter):
     - Angular + React
     - RDS postgres
 
-# Prune Cahe
+# Prune Cache
 docker system prune -a
