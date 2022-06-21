@@ -46,7 +46,7 @@ RUN npm i grunt-cli --location=global
 
 COPY package.json .
 
-COPY .env .
+COPY .env.example .env
 
 RUN npm install --legacy-peer-deps
 
@@ -66,7 +66,7 @@ COPY --from=builder /app/public /usr/share/nginx/html
 
 # docker build -t new-frontend -f frontend.dockerfile .
 
-# docker run -v /home/darshan/Desktop/kwant/webapi:/app -dp 80:80 new-frontend
+# docker run -v /home/darshan/Desktop/app/webapi:/app -dp 80:80 new-frontend
 
 # docker run -dp 80:80 new-frontend
 
@@ -76,5 +76,3 @@ COPY --from=builder /app/public /usr/share/nginx/html
 
 # docker network create ontarget-net
 # docker run --name frontend --rm -d --network ontarget-net new-frontend
-
-
