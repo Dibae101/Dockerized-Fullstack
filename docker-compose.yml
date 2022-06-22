@@ -7,8 +7,8 @@ services:
      environment:
          - NODE_ENV=dev
      env_file:
-         - .env.example
-     container_name: qa-backend
+         - .env
+     container_name: dev_backend
      build:
          context: ./
          dockerfile: backend.dockerfile
@@ -16,7 +16,7 @@ services:
          - ./:/app
      restart: always
      networks:
-        ontarget_network:
+        app_network:
            ipv4_address: "172.29.0.2"
      ports:
          - "8080:8080"
@@ -28,8 +28,8 @@ services:
          - backend
      image: frontend-image
      env_file:
-         - .env.example
-     container_name: qa-frontend
+         - .env
+     container_name: dev_frontend
      build:
          context: ./
          dockerfile: frontend.dockerfile
@@ -37,13 +37,14 @@ services:
          - ./:/app
      restart: always
      networks:
-         ontarget_network:
+         app_network:
             ipv4_address: "172.29.0.3"
      ports:
          - "80:80"
  
 networks:
-   ontarget_network:
+   app_network:
       ipam:
          config:
             - subnet: "172.29.0.0/16"
+
