@@ -1,5 +1,5 @@
-# Pipeline within a server hosted in Ec2
-
+// Pipeline within a server hosted in Ec2
+// Use Global Slack Notifier
 pipeline {
     agent any
 
