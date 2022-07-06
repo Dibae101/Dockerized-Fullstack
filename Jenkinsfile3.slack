@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+    environment {
+        AWS_ACCOUNT_ID="22222222222"
+        AWS_DEFAULT_REGION="us-east-1"
+        IMAGE_TAG="v1"
+
+        IMAGE_REPO_FRONTEND="frontend"
+        REPO_FRONTEND_URI = "22222222222.dkr.ecr.us-east-1.amazonaws.com/frontend"
+
+        IMAGE_REPO_BACKEND="backend"
+        REPO_BACKEND_URI = "2222222222222.dkr.ecr.us-east-1.amazonaws.com/backend"
+   }
+
+    stages {
+        stage('Start'){
+        when { branch 'qa' }
+            steps{
+                echo "Pipeline Started"
+            }
+        }
+
+        stage('Get commit details') {
+            steps {
+              script {
+                env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
+                env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
+                    }
+                  }
+                }
+
+        stage('Git') {
+            steps{
+                slackSend channel: '#jenkins', tokenCredentialId: '2222222-2222222-2222-2222-222222222', color: '#FFFF00', message: """${env.JOB_NAME} #${env.BUILD_NUMBER} Started
+                Git Commit= ${env.GIT_COMMIT_MSG}
+                Git Author= ${env.GIT_AUTHOR}
+                """ 
+            }
+        }
+        stage('Logging into AWS ECR') {
+            steps {
+                script {
+                sh """aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"""
+                }
+              }
+            }
+    // Building Docker images Frontend
+    stage('Building Frontend image') {
+      steps{
+        script {
+          sh """DOCKER_BUILDKIT=1"""
+          sh """DOCKER_BUILDKIT=1 docker build -t ${IMAGE_REPO_FRONTEND}:${IMAGE_TAG} -f frontend.dockerfile . """
+        }
+      }
+    }
+  // Building Docker images Backend
+    stage('Building Backend image') {
+      steps{
+        script {
+          // dockerImage2 = docker.build "${IMAGE_REPO_BACKEND}:${IMAGE_TAG}"- for Dockerfile
+          sh """DOCKER_BUILDKIT=1"""
+          sh """DOCKER_BUILDKIT=1 docker build -t ${IMAGE_REPO_BACKEND}:${IMAGE_TAG} -f backend.dockerfile . """
+        }
+      }
+    }
+   // Uploading Docker images into AWS ECR
+    stage('Pushing to ECR') {
+        steps{
+            script {
+          // frontend push
+                sh """docker tag ${IMAGE_REPO_FRONTEND}:${IMAGE_TAG} ${REPO_FRONTEND_URI}:$IMAGE_TAG"""
+                sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_FRONTEND}:${IMAGE_TAG}"""
+          // backend push
+                sh """docker tag ${IMAGE_REPO_BACKEND}:${IMAGE_TAG} ${REPO_BACKEND_URI}:$IMAGE_TAG"""
+                sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_BACKEND}:${IMAGE_TAG}"""
+            }
+          }
+        }
+    stage('ECS Restart') {
+        steps{
+            script{
+                sh """aws ecs update-service --cluster pipeline-server-cluster --service pipeline-service --force-new-deployment --region us-east-1"""
+                }
+            }
+        }
+    }
+}
