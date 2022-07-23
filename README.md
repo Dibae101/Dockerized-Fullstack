@@ -3,5 +3,12 @@ Module (initialited with Jhispter):
     - Angular + React
     - RDS postgres
 
-# Prune Cache
-docker system prune -a
+Tools used:
+    - Jenkins
+    - Docker
+    - Sonarqube
+    - ECR
+    - ECS
+    - Cloudfront
+    - ACM
+    - ALB
