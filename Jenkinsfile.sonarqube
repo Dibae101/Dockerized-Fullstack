@@ -1,0 +1,22 @@
+pipeline{
+    agent{
+        docker{
+            image 'maven:3.5.2'
+        }
+    }
+    stages{
+        stage('Build'){
+            steps{
+                sh 'mvn clean install -DskipTests'
+            }
+        }
+        stage('Sonarqube Analysis'){
+            // def scannerHome = tool 'SonarScanner 4.0'
+            steps{
+            withSonarQubeEnv('sonarserver'){
+                sh "mvn sonar:sonar"
+               }
+            }
+           }
+    }
+}
