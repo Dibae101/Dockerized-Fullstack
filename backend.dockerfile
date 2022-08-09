@@ -25,22 +25,23 @@ RUN --mount=type=cache,target=/root/.m2 mvn -f $HOME/pom.xml clean package -Dski
 #
 FROM openjdk:8-jdk-slim
 
+RUN apt-get update && apt-get install -y fontconfig libfreetype6 
+
 COPY --from=build /usr/app/target/* /usr/local/lib/
- 
+
 COPY .env.example /usr/local/lib/.env
- 
+
 COPY .env.example /.env
 
 EXPOSE 8080
- 
+
 ENTRYPOINT ["java","-jar","/usr/local/lib/ontarget.jar"]
 
 
-# docker build -t new-backend -f backend.dockerfile .
+# DOCKER_BUILDKIT=1 docker build -t new-backend -f backend.dockerfile .
 
 # docker run -dp 8080:8080 new-backend
 
 # SOlving maven wrapper issue:
 # RUN mvn -N io.takari:maven:wrapper
 # export DOCKER_BUILDKIT=1
-
