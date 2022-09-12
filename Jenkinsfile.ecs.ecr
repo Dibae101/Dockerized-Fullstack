@@ -25,6 +25,7 @@ pipeline {
               script {
                 env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
                 env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
+                env.CI_ERROR = "Failed while Getting Commit Messages"
                     }
                   }
                 }
@@ -34,6 +35,7 @@ pipeline {
                 slackSend channel: '#jenkins', tokenCredentialId: '0000000-00000000-000000000-000000', color: '#FFFF00', message: """${env.JOB_NAME} #${env.BUILD_NUMBER}
                 Git Commit= ${env.GIT_COMMIT_MSG}
                 Git Author= ${env.GIT_AUTHOR}
+                Git CI_Error = ${env.CI_ERROR}
                 """
             }
         }
@@ -41,6 +43,8 @@ pipeline {
             steps {
                 script {
                 sh """aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"""
+                env.CI_ERROR = "Failed wihle Logging into AWS ECR"
+
                 }
               }
             }
@@ -51,6 +55,8 @@ pipeline {
           sh """sudo cp /home/ec2-user/environment_variables/.env.qa /var/lib/jenkins/workspace/QA"""
           sh """DOCKER_BUILDKIT=1"""
           sh """DOCKER_BUILDKIT=1 docker build -t ${IMAGE_REPO_FRONTEND}:${IMAGE_TAG} -f frontend.dockerfile . """
+          env.CI_ERROR = "Failed while Building Frontend Images"
+
         }
       }
     }
@@ -62,6 +68,7 @@ pipeline {
           sh """sudo cp /home/user/environment_variables/.env.qa /var/lib/jenkins/workspace/QA"""
           sh """DOCKER_BUILDKIT=1"""
           sh """DOCKER_BUILDKIT=1 docker build -t ${IMAGE_REPO_BACKEND}:${IMAGE_TAG} -f backend.dockerfile . """
+          env.CI_ERROR = "Failed while Building Backend Image"
         }
       }
     }
@@ -75,6 +82,7 @@ pipeline {
           // backend push
                 sh """docker tag ${IMAGE_REPO_BACKEND}:${IMAGE_TAG} ${REPO_BACKEND_URI}:$IMAGE_TAG"""
                 sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_BACKEND}:${IMAGE_TAG}"""
+                env.CI_ERROR = "Failed while pushing image to ECR"
             }
           }
         }
@@ -82,6 +90,7 @@ pipeline {
         steps{
             script{
                 sh """aws ecs update-service --cluster qa-cluster --service qa-service --force-new-deployment --region us-east-1"""
+                env.CI_ERROR = "Failed while ECS Restart and App Deploymemt"
                 }
             }
         }
